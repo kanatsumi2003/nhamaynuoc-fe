@@ -59,7 +59,7 @@ jobs:
 
   build:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/staging'
-    # needs: test
+    needs: test
     runs-on: ubuntu-latest
     # outputs:
     #   CONTAINER_NAME: ${{ steps.set-env.outputs.CONTAINER_NAME }}
