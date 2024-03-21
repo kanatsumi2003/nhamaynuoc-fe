@@ -79,6 +79,7 @@ jobs:
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
             echo "DOCKER_REGISTRY=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:${{ env.VERSION_STAGING }}" >> $GITHUB_ENV
           fi
+          echo $DOCKER_REGISTRY
       # - name: Build and push docker image to ghcr
       #   uses: elgohr/Publish-Docker-Github-Action@v4
       #   with:
