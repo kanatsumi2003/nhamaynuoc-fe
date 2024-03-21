@@ -147,6 +147,7 @@ jobs:
           script: |
             docker stop ${{ env.CONTAINER_NAME }} || true
             docker rm ${{ env.CONTAINER_NAME }}  || true
+            docker rmi ${{ env.DOCKER_REGISTRY }}  || true
             docker pull ${{ env.DOCKER_REGISTRY }}
             docker run -d --name ${{ env.CONTAINER_NAME }} --restart unless-stopped --network ${{ env.CONTAINER_NETWORK }} -p ${{ env.CONTAINER_PORT }}:80 ${{ env.DOCKER_REGISTRY }}
      # echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ secrets.GH_USERNAME }} --password-stdin
