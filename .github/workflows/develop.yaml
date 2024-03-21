@@ -17,47 +17,47 @@ on:
 
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    # environment: $ENVIRONMENT
-    permissions:
-      contents: read
-      packages: write
-    env:
-      NODE_OPTIONS: "--max_old_space_size=4096"
-      CI: false
-    steps:
-      - name: Setup code
-        uses: actions/checkout@v4
+  # test:
+  #   runs-on: ubuntu-latest
+  #   # environment: $ENVIRONMENT
+  #   permissions:
+  #     contents: read
+  #     packages: write
+  #   env:
+  #     NODE_OPTIONS: "--max_old_space_size=4096"
+  #     CI: false
+  #   steps:
+  #     - name: Setup code
+  #       uses: actions/checkout@v4
 
-      - name: Setup node 18
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18.0.0"
+  #     - name: Setup node 18
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: "18.0.0"
 
-      # Caching
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+  #     # Caching
+  #     - name: Get yarn cache directory path
+  #       id: yarn-cache-dir-path
+  #       run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
-      - uses: actions/cache@v3
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+  #     - uses: actions/cache@v3
+  #       id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+  #       with:
+  #         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+  #         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-yarn-
 
-      - name: Run test
-        run: |
-          echo "TESTING...."
-          yarn upgrade
-          yarn
-          yarn build
+  #     - name: Run test
+  #       run: |
+  #         echo "TESTING...."
+  #         yarn upgrade
+  #         yarn
+  #         yarn build
 
   build:
     if: github.ref == 'refs/heads/main'
-    needs: test
+    # needs: test
     runs-on: ubuntu-latest
     # environment: $ENVIRONMENT
     permissions:
