@@ -1,0 +1,94 @@
+name: Develop Deploy to VPS
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # environment: $ENVIRONMENT
+    permissions:
+      contents: read
+      packages: write
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
+      CI: false
+    steps:
+      - name: Setup code
+        uses: actions/checkout@v4
+
+      - name: Setup node 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.0.0"
+
+      # Caching
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Run test
+        run: |
+          echo "TESTING...."
+          yarn upgrade
+          yarn
+          yarn build
+
+  build:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    # environment: $ENVIRONMENT
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Setup code
+        uses: actions/checkout@v4
+
+      - name: update env
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Build and push docker image to ghcr
+        uses: elgohr/Publish-Docker-Github-Action@v4
+        with:
+          name: ${{ vars.IMAGE_NAME }}
+          registry: ${{ vars.CONTAINER_REGISTRY }}
+          username: ${{ secrets.GH_USERNAME }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          tags: ${{ vars.IMAGE_TAG }}
+          dockerfile: Dockerfile
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    # environment: $ENVIRONMENT
+    steps:
+      - name: Deploy package to VPS
+        uses: appleboy/ssh-action@v1.0.0
+        env:
+          IMAGE: ${{ vars.CONTAINER_REGISTRY }}/${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_PRIVATE_KEY }}
+          script: |
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ secrets.GH_USERNAME }} --password-stdin
+            docker stop ${{ vars.CONTAINER_NAME }} || true
+            docker rm ${{ vars.CONTAINER_NAME }} || true
+            docker pull ${{ env.IMAGE }}
+            docker run -d --name ${{ vars.CONTAINER_NAME }} --restart unless-stopped --network ${{ vars.CONTAINER_NETWORK }} -p ${{ vars.CONTAINER_PORT }}:80 ${{ env.IMAGE }}
