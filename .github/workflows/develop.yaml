@@ -92,7 +92,7 @@ jobs:
       - name: Build and push docker image to ghcr
         uses: elgohr/Publish-Docker-Github-Action@v4
         with:
-          name: ${{ secrets.DOCKER_IMAGE }}
+          name: ${{ vars.IMAGE_NAME }}
           registry: ${{ vars.CONTAINER_REGISTRY }}
           username: ${{ secrets.GH_USERNAME }}
           password: ${{ secrets.GH_TOKEN }}
@@ -117,19 +117,19 @@ jobs:
         # id: set-env
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "DOCKER_REGISTRY=${{ vars.CONTAINER_REGISTRY }}/${{ secrets.DOCKER_IMAGE }}:${{ vars.VERSION_PRODUCTION }}" >> $GITHUB_ENV
+            echo "DOCKER_REGISTRY=${{ vars.CONTAINER_REGISTRY }}/${{ vars.IMAGE_NAME }}:${{ vars.VERSION_PRODUCTION }}" >> $GITHUB_ENV
             echo "CONTAINER_NAME=${{ vars.CONTAINER_NAME_PRODUCTION }}" >> $GITHUB_ENV
             echo "CONTAINER_NETWORK=${{ vars.CONTAINER_NETWORK_PRODUCTION }}" >> $GITHUB_ENV
             echo "CONTAINER_PORT=${{ vars.CONTAINER_PORT_PRODUCTION }}" >> $GITHUB_ENV
 
           elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
-            echo "DOCKER_REGISTRY=${{ vars.CONTAINER_REGISTRY }}/${{ secrets.DOCKER_IMAGE }}:${{ vars.VERSION_DEV }}" >> $GITHUB_ENV
+            echo "DOCKER_REGISTRY=${{ vars.CONTAINER_REGISTRY }}/${{ vars.IMAGE_NAME }}:${{ vars.VERSION_DEV }}" >> $GITHUB_ENV
             echo "CONTAINER_NAME=${{ vars.CONTAINER_NAME_DEV }}" >> $GITHUB_ENV   
             echo "CONTAINER_NETWORK=${{ vars.CONTAINER_NETWORK_DEV }}" >> $GITHUB_ENV
             echo "CONTAINER_PORT=${{ vars.CONTAINER_PORT_DEV }}" >> $GITHUB_ENV
 
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            echo "DOCKER_REGISTRY=${{ vars.CONTAINER_REGISTRY }}/${{ secrets.DOCKER_IMAGE }}:${{ vars.VERSION_STAGING }}" >> $GITHUB_ENV
+            echo "DOCKER_REGISTRY=${{ vars.CONTAINER_REGISTRY }}/${{ vars.IMAGE_NAME }}:${{ vars.VERSION_STAGING }}" >> $GITHUB_ENV
             echo "CONTAINER_NAME=${{ vars.CONTAINER_NAME_STAGING }}" >> $GITHUB_ENV           
             echo "CONTAINER_NETWORK=${{ vars.CONTAINER_NETWORK_STAGING }}" >> $GITHUB_ENV
             echo "CONTAINER_PORT=${{ vars.CONTAINER_PORT_STAGING }}" >> $GITHUB_ENV
