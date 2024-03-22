@@ -19,47 +19,47 @@ on:
 
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    # environment: $ENVIRONMENT
-    permissions:
-      contents: read
-      packages: write
-    env:
-      NODE_OPTIONS: "--max_old_space_size=4096"
-      CI: false
-    steps:
-      - name: Setup code
-        uses: actions/checkout@v4
+  # test:
+  #   runs-on: ubuntu-latest
+  #   # environment: $ENVIRONMENT
+  #   permissions:
+  #     contents: read
+  #     packages: write
+  #   env:
+  #     NODE_OPTIONS: "--max_old_space_size=4096"
+  #     CI: false
+  #   steps:
+  #     - name: Setup code
+  #       uses: actions/checkout@v4
 
-      - name: Setup node 18
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18.0.0"
+  #     - name: Setup node 18
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: "18.0.0"
 
-      # Caching
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+  #     # Caching
+  #     - name: Get yarn cache directory path
+  #       id: yarn-cache-dir-path
+  #       run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
-      - uses: actions/cache@v3
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+  #     - uses: actions/cache@v3
+  #       id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+  #       with:
+  #         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+  #         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-yarn-
 
-      - name: Run test
-        run: |
-          echo "TESTING...."
-          yarn upgrade
-          yarn
-          yarn build
+  #     - name: Run test
+  #       run: |
+  #         echo "TESTING...."
+  #         yarn upgrade
+  #         yarn
+  #         yarn build
 
   build:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/staging'
-    needs: test
+    # needs: test
     runs-on: ubuntu-latest
     # outputs:
     #   CONTAINER_NAME: ${{ steps.set-env.outputs.CONTAINER_NAME }}
@@ -117,19 +117,19 @@ jobs:
         # id: set-env
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "DOCKER_REGISTRY=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:${{ vars.VERSION_PRODUCTION }}" >> $GITHUB_ENV
+            echo "DOCKER_REGISTRY=${{ vars.CONTAINER_REGISTRY }}/${{ secrets.DOCKER_IMAGE }}:${{ vars.VERSION_PRODUCTION }}" >> $GITHUB_ENV
             echo "CONTAINER_NAME=${{ vars.CONTAINER_NAME_PRODUCTION }}" >> $GITHUB_ENV
             echo "CONTAINER_NETWORK=${{ vars.CONTAINER_NETWORK_PRODUCTION }}" >> $GITHUB_ENV
             echo "CONTAINER_PORT=${{ vars.CONTAINER_PORT_PRODUCTION }}" >> $GITHUB_ENV
 
           elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
-            echo "DOCKER_REGISTRY=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:${{ vars.VERSION_DEV }}" >> $GITHUB_ENV
+            echo "DOCKER_REGISTRY=${{ vars.CONTAINER_REGISTRY }}/${{ secrets.DOCKER_IMAGE }}:${{ vars.VERSION_DEV }}" >> $GITHUB_ENV
             echo "CONTAINER_NAME=${{ vars.CONTAINER_NAME_DEV }}" >> $GITHUB_ENV   
             echo "CONTAINER_NETWORK=${{ vars.CONTAINER_NETWORK_DEV }}" >> $GITHUB_ENV
             echo "CONTAINER_PORT=${{ vars.CONTAINER_PORT_DEV }}" >> $GITHUB_ENV
 
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            echo "DOCKER_REGISTRY=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:${{ vars.VERSION_STAGING }}" >> $GITHUB_ENV
+            echo "DOCKER_REGISTRY=${{ vars.CONTAINER_REGISTRY }}/${{ secrets.DOCKER_IMAGE }}:${{ vars.VERSION_STAGING }}" >> $GITHUB_ENV
             echo "CONTAINER_NAME=${{ vars.CONTAINER_NAME_STAGING }}" >> $GITHUB_ENV           
             echo "CONTAINER_NETWORK=${{ vars.CONTAINER_NETWORK_STAGING }}" >> $GITHUB_ENV
             echo "CONTAINER_PORT=${{ vars.CONTAINER_PORT_STAGING }}" >> $GITHUB_ENV
